@@ -1,21 +1,8 @@
 # Shell Intelligence (SI) 
 
-```
-  ____   _            _  _  ____          _   
- / ___| | |__    ___ | || || __ )   ___  | |_ 
- \___ \ | '_ \  / _ \| || ||  _ \  / _ \ | __|
-  ___) || | | ||  __/| || || |_) || (_) || |_ 
- |____/ |_| |_| \___||_||_||____/  \___/  \__|                                               
-```
+Shell Intelligence (SI) is an advanced LLM-powered agent designed to enhance users interaction with the Linux command-line interface (CLI). SI enables users to interact with Linux CLI using plain English instead of having to use complex commands.
 
-### Shell Intelligence (SI)
-
-Shell Intelligence (SI) is an innovative tool that uses artificial intelligence (AI) to enhance the user experience of the command-line interface (CLI) in Linux. SI enables users to interact with Linux using plain English instead of having to use complex commands.
-
-
-SI understands natural language input and translates it into commands, making Linux more accessible to a wider audience...
-
-SI provides context-aware error messages and suggestions to help troubleshoot problems effectively and generates reports in plain English, enhancing the understandability of command output.
+As an intelligent agent, SI not only simplifies complex command execution but also offers context-aware assistance. It provides clear, user-friendly error explanations and actionable suggestions for troubleshooting. Additionally, SI transforms technical command outputs into plain English reports, ensuring users of all expertise levels can easily understand and leverage Linux functionalities.
 
 ## Getting Started
 
@@ -58,6 +45,6 @@ guna@anug:[/home/guna/]$!> Generate a report of running processes.
 
 - **Dependency on Language Models**: SI's performance relies on the underlying language model and updates to language models may impact its behavior.
 
-#### development
-This project has been tested with pre-trained (base) Models which barely manages. For further improvement and stability the SI will be using Llama3
+#### Development
+This project has been tested with pre-trained (base) Models which barely manages. Soon for further improvement and stability the SI will be using Llama3
 specifically finetuned for SI with both supervised and Reinforcement Learning methods and quantized model for performance improvements.
