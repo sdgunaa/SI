@@ -2,83 +2,144 @@
 #define SESSION_H
 
 #include "command.h"
-#include <vector>
-#include <optional>
-#include <iostream>
+#include "logger.h"
+#include "task.h"
+#include <chrono>
+#include <cstdlib>
 #include <ctime>
+#include <iostream>
 #include <map>
+#include <optional>
+#include <sstream>
+#include <vector>
 
 using namespace std;
 
-enum SessionType { Auto, Interactive, Unknown };
+enum class SessionStatus { ACTIVE, TERMINATED, SUSPENDED };
 
-class Session
-{
-
-private:
-    int userId;
-    string username;
-    bool active;
-    SessionType type;
-    vector<Command> commands;
-    time_t start_time;
-    time_t last_active_time;
-    time_t expirationTime;
-    bool is_suspended;
-    static const int TIMEOUT_PERIOD = 600;
-    void updateLastActiveTime()
-    {
-        last_active_time = time(0);
-    }
+class Session {
 
 public:
-    Session(int userId, const std::string& username, SessionType type = SessionType.Auto, const vector<Command>& commands)
-        : userId(userId), username(username), active(true), type(type), commands(commands),
-          start_time(time(0)), last_active_time(start_time),
-          expirationTime(start_time + 1800),
-          is_suspended(false) {}
+  Session(const std::string &userName, optional<shared_ptr<Logger>> log = nullptr)
+      : UserName(userName), start_time(std::chrono::steady_clock::now()),
+        last_active_time(std::time(nullptr)), status(SessionStatus::ACTIVE), logger(log) {}
 
-    int getUserId() const { return userId; }
-    const std::string& getUsername() const { return username; }
-    bool isActive() const { return active; }
-    void endSession() { active = false; }
-    bool isSuspended() const { return is_suspended; }
-    void suspendSession() { is_suspended = true; }
-    void resumeSession() { is_suspended = false; updateLastActiveTime(); }
-    void clearCommandHistory() { commands.clear(); }
-    void updateExpirationTime(time_t duration) { if(active){expirationTime = start_time + duration; }}
-    bool isExpired() const { return time(0) > expirationTime; }
-    void checkForTimeout() {if (isActive() && (time(0) - last_active_time > TIMEOUT_PERIOD)) {if (type == SessionType.Interactive){suspendSession();}}}
-    SessionType getType() const { return type; }
-    std::string toString() const
+  std::string getUsername() { return UserName; }
+  bool isActive() const {
+    if (status == SessionStatus::ACTIVE)
+      return true;
+    return false;
+  }
+  bool isSuspended() const {
+    if (status == SessionStatus::SUSPENDED)
+      return true;
+    return false;
+  }
+  bool isTerminated() const {
+    if (status == SessionStatus::TERMINATED)
+      return true;
+    return false;
+  }
+  time_t getLastActiveTime() const { return last_active_time; }
+  void updateLastActiveTime() { last_active_time = std::time(nullptr); }
+  void clearCommandHistory() 
+  { 
+    commands->clear(); 
+    if (logger)
     {
-        ostringstream ss;
-        ss << "User ID: " << userId << ", Username: " << username << ", Active: " << (active? "Yes" : "No")
-           << ", Type: " << (type == SessionType::Auto? "Auto" : (type == SessionType::Interactive? "Interactive" : "Unknown"));
-        return ss.str();
+        logger->get()->log(LogLevel::INFO, "Command history cleared", false);
     }
-
-    void addCommand(const Command& cmd) { commands.push_back(cmd); updateLastActiveTime();}
-    const vector<Command>& getCommands() const { return commands; }
-    void printCommandHistory() const
-    {
-        cout << "\nCommand history for user: "<< username << "\n" << endl;
-        for (const auto& cmd : commands) {
-            cout << cmd.toString() << endl;
+}
+  bool ResumeSession() {
+    if (isSuspended()) {
+      status = SessionStatus::ACTIVE;
+      updateLastActiveTime();
+        if (logger)
+        {
+            logger->get()->log(LogLevel::INFO, "Session Resumed", false);
         }
+      return true;
     }
-    time_t getLastActiveTime() const { return last_active_time; }
-    void printSessionInfo() const
+    return false;
+  }
+  bool SuspendSession() {
+    if (isActive()) {
+      status = SessionStatus::SUSPENDED;
+      updateLastActiveTime();
+      if (logger)
+        {
+            logger->get()->log(LogLevel::INFO, "Session Suspended", false);
+        }
+      return true;
+    }
+    return false;
+  }
+  bool TerminateSession() {
+    if (!isTerminated()) {
+      status = SessionStatus::TERMINATED;
+      end_time = std::chrono::steady_clock::now();
+      updateLastActiveTime();
+      if (logger)
+        {
+            logger->get()->log(LogLevel::INFO, "Session Terminated", false);
+        }
+      return true;
+    }
+    return false;
+  }
+  void addCommand(const Command &cmd) { commands->push_back(cmd); }
+  void addTask(const Task &task) 
+  { 
+    tasks->push_back(task);
+    if (logger)
     {
-        cout << "User ID: " << userId << endl;
-        cout << "Username: " << username << endl;
-        cout << "Active: " << (active? "Yes" : "No") << endl;
-        cout << "Start Time: " << ctime(&start_time);
-        cout << "Last Active Time: " << ctime(&last_active_time);
-        cout << "Expiration Time: " << ctime(&expirationTime);
-        cout << "Suspended: " << (is_suspended? "Yes" : "No") << endl;
-        cout << "Command History: " << commands.size() << " commands" << endl;
-        cout << endl;
+        logger->get()->log(LogLevel::INFO, "Task added: " + task.getTaskName(), false);
     }
+    }
+  void endSession() {
+    if (isTerminated()) {
+      if (logger)
+        {
+            logger->get()->log(LogLevel::ERROR, "Session Already ended: " + UserName, false);
+            return;
+        }
+        cerr << "Session has already been terminated." << endl;
+      return;
+    }
+    TerminateSession();
+    if (logger)
+    {
+        logger->get()->log(LogLevel::INFO, "Session ended: " + UserName, false);
+        return;
+    }
+    cout << "Session for user " << UserName << " ended." << endl;
+    
+  }
+  void printSessionInfo() const {
+    cout << "Username: " << UserName << endl;
+    cout << "Active: " << (isActive() ? "Yes" : "No") << endl;
+    cout << "Start Time: " << formatTime(start_time) << endl;
+    
+  }
+
+private:
+  std::string UserName;
+  optional<vector<Command>> commands;
+  optional<vector<Task>> tasks;
+  std::chrono::time_point<std::chrono::steady_clock> start_time;
+  std::chrono::time_point<std::chrono::steady_clock> end_time;
+  time_t last_active_time;
+  SessionStatus status;
+  optional<shared_ptr<Logger>> logger;
+
+  string formatTime(const std::chrono::time_point<std::chrono::steady_clock>
+                        &time_point) const {
+    auto time_in_seconds =
+        chrono::duration_cast<chrono::seconds>(time_point.time_since_epoch())
+            .count();
+    time_t time = static_cast<time_t>(time_in_seconds);
+    return ctime(&time);
+  }
 };
+
 #endif
