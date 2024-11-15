@@ -77,14 +77,3 @@ private:
     }
 
 };
-
-void logmessage(Logger* logger = nullptr, LogLevel level, const string& message, bool printlog = false)
-{
-    if (logger != nullptr)
-    {
-        logger->log(level, message, printlog);
-        return;
-    }
-    cout << "logger Failed: " << level << message << endl;
-    return;
-}
