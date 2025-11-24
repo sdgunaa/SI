@@ -1,0 +1,76 @@
+Building SI-Core Foundation Tests...
+Checking dependencies...
+Compiling foundation modules...
+../src/foundation/signals.cpp: In member function ‘void si::foundation::SignalHandler::register_handler(int, SignalCallback)’:
+../src/foundation/signals.cpp:14:65: warning: unused parameter ‘callback’ [-Wunused-parameter]
+   14 | void SignalHandler::register_handler(int signal, SignalCallback callback) {
+      |                                                  ~~~~~~~~~~~~~~~^~~~~~~~
+../src/foundation/signals.cpp: In static member function ‘static void si::foundation::SignalHandler::signal_handler(int)’:
+../src/foundation/signals.cpp:28:40: warning: unused parameter ‘signal’ [-Wunused-parameter]
+   28 | void SignalHandler::signal_handler(int signal) {
+      |                                    ~~~~^~~~~~
+Compiling test program...
+manual_test.cpp: In function ‘void test_platform()’:
+manual_test.cpp:12:8: warning: unused variable ‘os’ [-Wunused-variable]
+   12 |   auto os = Platform::get_os();
+      |        ^~
+Linking...
+
+✅ Build complete!
+
+Running tests...
+================================
+
+========================================
+SI-Core Foundation Component Tests
+========================================
+
+Testing Platform utilities...
+  OS: Linux
+  Home: "/home/guna"
+  Config dir: "/home/guna/.config/si"
+  Cache dir: "/home/guna/.cache/si"
+  Env variables: OK
+  Path expansion: "/home/guna/test"
+  Is terminal: yes
+  Terminal size: 24x80
+  ✅ Platform tests PASSED
+
+Testing Config management...
+  Shell type: /bin/bash
+  History size: 10000
+  Colors enabled: yes
+  AI provider: llamacpp
+  AI model: codellama-7b
+  Temperature: 0.7
+  Model path: /home/guna/.local/share/si/models/codellama-7b-q4.gguf
+  GPU layers: 32
+  Confirm destructive: yes
+  Explain before run: yes
+  ✅ Config tests PASSED
+
+Testing Logging system...
+[debug] This is a debug message
+[info] This is an info message
+[warning] This is a warning message
+[error] This is an error message
+  Check /tmp/si_test.log for output
+  ✅ Logging tests PASSED
+
+Testing Signal handling...
+  Initial state: not shutdown
+  Shutdown requested: confirmed
+  ✅ Signal tests PASSED
+
+========================================
+✅ ALL TESTS PASSED!
+========================================
+
+
+Build artifacts:
+-rw-rw-r-- 1 guna guna 3.6M Nov 23 04:37 config.o
+-rw-rw-r-- 1 guna guna 8.4M Nov 23 04:37 logging.o
+-rw-rw-r-- 1 guna guna 7.4M Nov 23 04:38 manual_test.o
+-rw-rw-r-- 1 guna guna 727K Nov 23 04:37 platform.o
+-rw-rw-r-- 1 guna guna  28K Nov 23 04:37 signals.o
+-rwxrwxr-x 1 guna guna 9.0M Nov 23 04:38 test_foundation

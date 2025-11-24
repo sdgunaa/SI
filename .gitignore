@@ -1,0 +1,12 @@
+build
+.cache
+archive
+.venv
+third_party/llama.cpp
+models/
+*.log
+*.o
+*.a
+*.so
+compile_commands.json
+.vscode/

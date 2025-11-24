@@ -1,0 +1,37 @@
+# SI-Core Configuration File
+# Location: ~/.config/si/si.conf
+
+[general]
+shell_type = "bash"             # bash, zsh, fish, powershell
+colors = true
+history_size = 10000
+
+[ai]
+provider = "llamacpp"           # llamacpp, ollama, openai
+model = "qwen2.5-1.5b"          # Model identifier
+temperature = 0.7
+max_tokens = 2048
+timeout_seconds = 60
+
+[ai.llamacpp]
+# Path to GGUF model file
+model_path = "~/.local/share/si/models/qwen2.5-1.5b-instruct-q4_k_m.gguf"
+gpu_layers = 33                 # Number of layers to offload to GPU (0 for CPU only)
+threads = 8                     # CPU threads
+
+[ai.ollama]
+host = "http://localhost:11434"
+model = "deepseek-r1:1.5b"
+
+[ai.openai]
+api_key_env = "OPENAI_API_KEY"
+model = "gpt-4"
+
+[safety]
+confirm_destructive = true      # Require confirmation for rm, dd, etc.
+explain_before_run = true       # Show explanation before executing generated commands
+dry_run_available = true        # Allow dry-run mode
+
+[paths]
+history_file = "~/.si_history.db"
+cache_dir = "~/.cache/si"
