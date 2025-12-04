@@ -136,7 +136,7 @@ Summary: Main entry point for SI-Core application
 - Handles graceful shutdown on signals
 Key functions: main(), initialize_modules(), run_repl()
 ```
-
+<!-- 
 ## Architecture
 
 SI-Core is built with a modular architecture:
@@ -179,7 +179,7 @@ SI/
 ├── tests/                # Unit tests
 ├── config/               # Configuration files
 └── docs/                 # Documentation
-```
+``` -->
 
 ## License
 
