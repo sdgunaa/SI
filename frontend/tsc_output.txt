@@ -1,0 +1,21 @@
+
+> si-frontend@0.1.0 check
+> tsc
+
+src/components/InputPrompt.tsx(5,39): error TS6133: 'Command' is declared but its value is never read.
+src/components/InputPrompt.tsx(10,1): error TS6192: All imports in import declaration are unused.
+src/components/InputPrompt.tsx(12,1): error TS6192: All imports in import declaration are unused.
+src/components/InputPrompt.tsx(31,3): error TS6133: 'onOpenHistory' is declared but its value is never read.
+src/components/InputPrompt.tsx(33,3): error TS6133: 'onNavigatePath' is declared but its value is never read.
+src/components/InputPrompt.tsx(163,56): error TS2345: Argument of type '{ name: string; is_directory: boolean; }' is not assignable to parameter of type '{ name: string; isDirectory: boolean; }'.
+  Property 'isDirectory' is missing in type '{ name: string; is_directory: boolean; }' but required in type '{ name: string; isDirectory: boolean; }'.
+src/components/InputPrompt.tsx(165,27): error TS2551: Property 'isDirectory' does not exist on type '{ name: string; is_directory: boolean; }'. Did you mean 'is_directory'?
+src/components/InputPrompt.tsx(172,28): error TS2551: Property 'isDirectory' does not exist on type '{ name: string; is_directory: boolean; }'. Did you mean 'is_directory'?
+src/components/SettingsWindow.tsx(36,9): error TS6133: 'toast' is declared but its value is never read.
+src/components/Sidebar.tsx(80,21): error TS6133: 'setWorkflows' is declared but its value is never read.
+src/components/TerminalBlock.tsx(46,9): error TS6133: 'settings' is declared but its value is never read.
+src/components/TerminalBlock.tsx(63,9): error TS6133: 'isSuccess' is declared but its value is never read.
+src/components/TerminalBlock.tsx(203,40): error TS6133: 'idx' is declared but its value is never read.
+src/hooks/useBlocks.ts(28,13): error TS6133: 'settings' is declared but its value is never read.
+src/hooks/useSettings.tsx(74,11): error TS6133: 'toast' is declared but its value is never read.
+src/pages/TerminalPage.tsx(16,1): error TS6133: 'ScrollArea' is declared but its value is never read.

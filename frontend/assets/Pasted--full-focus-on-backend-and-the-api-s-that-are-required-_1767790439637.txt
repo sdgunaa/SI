@@ -1,0 +1,204 @@
+""full focus on backend and the api's that are required for backend and will utilized by frontend  so that i will create a new agent that will fully focus on frontend
+
+SI (Shell Intelligence) Implementation Plan
+Goal: Build a dual-mode (Headless CLI + Apple HIG GUI) AI-powered shell that rivals and exceeds "Warp" in capability, featuring a unified C++ core, MCP integration, and multi-provider AI routing.
+
+Architecture: Dual-Mode System
+Both modes share the Secure Agent Core (libsi_core) written in C++20.
+
+Feature	Headless Mode (CLI)	GUI Mode (Apple HIG / Web Tech)
+Primary UX	Text streams, TUI overlays	Visual Blocks, Windows, Panes, Animations
+Input	Standard Stdin/Replxx	Visual Editor, Command Palette, AI Chat
+Output	ANSI/VT100 (Parsed for Blocks)	Rich HTML/Canvas Blocks, Markdown, Charts
+Target	Servers, SSH, Scripts, Automation	Desktop Productivity, Collaboration, Exploration
+Phase 1: Core Foundation & Refactoring (Completed)
+ Project Setup: CMake, Logging (spdlog), Config (Ollama/OpenAI/vLLM).
+ Refactor: Extract REPL from 
+
+main.cpp
+ to si::shell::InteractiveShell.
+ Config: Hierarchical loading (/etc, ~/.config, .si/config.toml).
+ IPC Design: JSON-RPC 2.0 Schema for Core <-> GUI communication.
+Phase 2: Agent Architecture (In Progress)
+ AI Router: Multi-provider logic (vLLM Primary -> Ollama -> OpenAI Fallback).
+ MCP Host: Model Context Protocol Client & Stdio Transport.
+ Security Layer:
+ Permissions Manager (Tool Access: READ/WRITE/NET).
+ Key Vault integration (OS Keychain/Encrypted File).
+ Standard Tools (MCP):
+ fs (Filesystem operations with sandboxing).
+ git (Repository context & actions).
+ shell (Safe command execution).
+Phase 3: Advanced Core Features (Headless + Warp-Features)
+These features are implemented in C++ Core and exposed API-first, usable in Headless mode via TUI/Commands and powering the GUI.
+
+1. Block-Based Model (Backend)
+ Command Metadata: Capture start_time, end_time, exit_code, cwd, user.
+ Output Capture: Buffer stdout/stderr per command for "Block" replay.
+ Data Structure: SessionBlock class serialization (SQLite/JSON).
+2. Workflows & Authoring
+ Workflow Engine: YAML/JSON based workflow definitions (Inputs, Steps, Metadata).
+ AI Authoring: "Natural Language -> Workflow" generation agent.
+ Library: Management of local and shared workflows.
+3. Per-Project Memory
+ Context Vector DB: (Optional) Simple embedding or keyword storage for project-specific context.
+ History Isolation: Per-project history/preference headers.
+4. Smart Suggestions (Replxx/TUI)
+ Inline Suggestions: Ghost text suggestions from History + AI.
+ Fuzzy Search: Global search across Command History & Workflows.
+Phase 4: Visual Experience (GUI Preparation)
+ JSON-RPC Server: Expose libsi_core via Domain Socket.
+ State Sync: Real-time events (shell.output, ai.chunk, block.update).
+ Pty/Tty Management: Robust pseudo-terminal handling for the GUI wrapper.
+Phase 5: Warp-Level Features (GUI Implementation Strategy)
+Note: The GUI itself (presumably Electron/Tauri/Native) will consume the Core API.
+
+ Visual Blocks: Render HTML-based blocks with copy/share actions.
+ Shared Workspace: "Drive" UI for syncing workflows/env vars (Encrypted Sync).
+ Collaboration: Real-time session sharing (WebRTC/Socket relay via Core).
+ Docs: Markdown viewer with "Run Block" buttons.
+Phase 6: Verification & Polish
+ Security Audit: Verify permission prompts for destructive MCP tools.
+ Performance: Latency checks for typing (Local prediction vs AI latency).
+ Design Review: Verify Apple HIG alignment (Typography, Spacing, Motion).
+
+
+update this plan to have display or view of si exactly like warp... for that refer the docs and images from internet for the frontend the also the backend features""
+
+
+this is the prompt i gave to other agent which is curently working on the codebase for the backend i want you to focus on frontend ...... remember the mian things i have mentioned in the promt apple hig + warp visuals and make sure you focus on frontend only cause another agent is already worknig on backend ....
+
+
+the below is the plan my agent now working on
+
+""SI (Shell Intelligence) Backend Implementation Plan
+Goal: Build the robust C++ Backend Agent Core that provides the API surface and intelligent services required to power a "Warp-like" Frontend (GUI) and a rich Headless CLI.
+
+Core Philosophy: The Backend is the "Source of Truth". The Frontend is a renderer.
+
+Blocks are the atomic unit of data.
+Sessions are ordered lists of Blocks.
+Workflows are reusable Block templates.
+Architecture: Backend Services & API
+The Backend exposes a JSON-RPC 2.0 API (over Domain Socket/Stdio) that the Frontend consumes.
+
+1. Block Service (si::block)
+The heart of the Warp experience. Manages command lifecycle and data.
+
+Data Model (Block):
+
+
+id
+: UUID (unique identifier)
+session_id: UUID
+
+command
+: String (The input)
+cwd: String (Working directory)
+
+env
+: Map<String, String> (Capture specific env like git branch)
+start_time: Timestamp
+end_time: Timestamp (nullable)
+exit_code: Int (nullable)
+output_chunks: List<{type: "stdout"|"stderr"|"html"|"json", data: string, ts: Timestamp}>
+
+metadata
+: JSON (Tags, AI analysis results)
+API Methods:
+
+block.start(session_id, command) -> block_id
+block.input(block_id, data) -> 
+
+void
+ (Send stdin to running block)
+block.resize(block_id, rows, cols) -> 
+
+void
+block.kill(block_id) -> 
+
+void
+block.get(block_id) -> Block
+block.list(session_id, filter) -> List<Block>
+block.search(query) -> List<BlockMatch>
+Events (Server->Client):
+
+block.update(block_id, partial_block)
+block.output(block_id, chunk_index, chunk_data)
+block.complete(block_id, exit_code)
+2. Session Service (si::session)
+Manages state, history, and "Notebook" context.
+
+API Methods:
+
+session.create(name, type) -> session_id
+session.list() -> List<SessionSummary>
+session.restore(session_id) -> SessionState
+session.export(session_id, format) -> String (Markdown/JSON)
+3. Workflow Service (si::workflow)
+Replaces "Warp Drive" workflows. Parametrized command templates.
+
+Data Model (Workflow):
+
+
+id
+: UUID
+
+name
+: String
+description: String
+command_template: String (e.g. kubectl logs -f {{pod_name}} -n {{namespace}})
+arguments: List<{name, description, default_value, type}>
+tags: List
+API Methods:
+
+workflow.list(tags, search) -> List<Workflow>
+workflow.save(workflow) -> workflow_id
+workflow.generate(natural_language_prompt) -> Workflow (AI-generated)
+workflow.run(workflow_id, params) -> block_id
+4. AI & Suggestion Service (si::ai)
+Powering "Agent Mode" and Inline Chat.
+
+API Methods:
+
+ai.chat(messages, context) -> Stream<Chunk>
+ai.suggest_command(history_context, partial_input) -> List<pSuggestion>
+ai.analyze_error(block_id) -> AnalysisResult (Fix suggestion)
+ai.autofill_workflow(workflow_id, context) -> Params
+5. Workspace Service (si::workspace)
+Shared context, env vars, and "Drive" features.
+
+API Methods:
+
+workspace.set_env(key, value, scope="local"|"shared")
+workspace.get_context() -> ContextObject
+workspace.sync() -> SyncStatus
+Phase 3 Implementation Steps (Backend Focus)
+These steps implement the C++ logic to support the above API.
+
+3.1. Block Subsystem
+ Data Structures: Define Block, OutputChunk structs in include/shell/block.hpp.
+ Block Manager: Create BlockManager to hold active and archived blocks.
+ Executor Integration: Modify 
+
+CommandExecutor
+ to write to a Block object via callback, not just std::cout.
+ Persistence: methods to serialize/deserialize Blocks to SQLite (src/session/storage.cpp).
+3.2. JSON-RPC Server
+ RPC Engine: Create a lightweight JSON-RPC dispatcher (src/rpc/server.cpp).
+ Method Registry: Bind C++ methods (BlockManager methods) to RPC names (block.*, session.*).
+ Transport: Support Domain Socket (AF_UNIX) for local GUI connection.
+3.3. Workflow Engine
+ Parser: YAML/JSON parser for Workflow definitions.
+ Template Engine: Simple {{var}} substitution logic.
+ Manager: CRUD operations for .si/workflows/ directory.
+3.4. AI Backend Extensions
+ Command Generator: Wrapper around 
+
+AIGateway
+ specifically for "Text -> Command".
+ Context Builder: Helper to gather cwd, last_blocks, git_status into a context prompt.
+Phase 4: Verification & Handover
+ API Tests: Unit tests calling the C++ Service layer directly (simulating RPC).
+ Documentation: Generate API_REFERENCE.md for the Frontend Agent.
+This plan assumes the Frontend Agent will build the specific UI components (React/Electron/Native) using these APIs.""
